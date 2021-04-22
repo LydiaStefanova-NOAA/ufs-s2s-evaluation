@@ -54,23 +54,10 @@ case "$domain" in
     "NP") latS="50"; latN="90" ;  lonW="0" ; lonE="360" ;;
     "SP") latS="-90"; latN="-50" ;  lonW="0" ; lonE="360" ;;
     "DatelineEq") latS="-1"; latN="1" ;  lonW="179" ; lonE="181" ;;
-    "Maritime") latS="-10"; latN="10" ; lonW="90" ; lonE="150" ;;
     *)
 esac
 
        mask=$mask
-       if [ "$varModel" == "u850" ] ; then
-          ncvarModel="UGRD_850mb"; multModel=1.; offsetModel=0.; units="m/s"
-          nameObs="${reference:-era5}";  varObs="u850"; ncvarObs="UGRD_850mb"; multObs=1.; offsetObs=0.
-       fi
-       if [ "$varModel" == "u200" ] ; then
-          ncvarModel="UGRD_200mb"; multModel=1.; offsetModel=0.; units="m/s"
-          nameObs="${reference:-era5}";  varObs="u200"; ncvarObs="UGRD_200mb"; multObs=1.; offsetObs=0.
-       fi
-       if [ "$varModel" == "z500" ] ; then
-          ncvarModel="HGT_500mb"; multModel=1.; offsetModel=0.; units="m"
-          nameObs="${reference:-era5}";  varObs="z500"; ncvarObs="HGT_500mb"; multObs=1.; offsetObs=0.
-       fi
        if [ "$varModel" == "t2max" ] ; then
           ncvarModel="TMAX_2maboveground"; multModel=1.; offsetModel=0.; units="deg K"
           nameObs="t2max_CPC";  varObs="tmax"; ncvarObs="tmax"; multObs=1.; offsetObs=273.15
@@ -232,7 +219,7 @@ cat << EOF > $nclscript
      wks_type@wkHeight            = 800
   end if 
 
-  wks                          = gsn_open_wks(wks_type,"rmse.${varModel}.${nameModelA}.${nameModelB}.${nameObs}.${season}.${ystart}-${yend}.${truelength}IC.$domain.$mask")
+  wks                          = gsn_open_wks(wks_type,"rmse.${varModel}.${nameModelA}.${nameModelB}.${season}.${ystart}-${yend}.${truelength}IC.$domain.$mask")
 
   latStart=${latS}
   latEnd=${latN}
@@ -438,7 +425,7 @@ cat << EOF > $nclscript
   res@gsnFrame            = False                          ; don't advance frame
   res@xyLineThicknesses = (/10.0, 10.0,  10.0/)          ; make second line thicker
   res@xyLineColors      = (/"red", "blue", "black"/)          ; change line color
-  res@xyLineColors      = (/"blue", "red", "black"/)          ; change line color
+  res@xyLineColors      = (/"blue", "orange", "black"/)          ; change line color
   res@xyExplicitLegendLabels = (/"${nameModelA}", "${nameModelB}", "${nameObs}"/)
  ; res@tiMainString      = "$domain, $season,  $truelength ICs, $mask"       ; add title
   res@gsnYRefLine = 0
@@ -450,9 +437,6 @@ cat << EOF > $nclscript
   res@pmLegendWidthF         = 0.08                  ; Change width and
   res@lgLabelFontHeightF     = .02                   ; change font height
   res@lgPerimOn              = False                 ; no box around
-  
-  ;res@tmXMajorGrid=True
-  res@tmYMajorGrid=True
 
   res0=res
   res1=res
@@ -561,8 +545,7 @@ cat << EOF > $nclscript
   panelopts@gsnPanelYWhiteSpacePercent = 0
   panelopts@gsnPanelXWhiteSpacePercent = 5
   panelopts@amJust   = "TopLeft"
-  ;gsn_panel(wks,plot(0:2),(/1,2/),panelopts)
-  gsn_panel(wks,plot(0:2),(/3/),panelopts)
+  gsn_panel(wks,plot,(/2,2/),panelopts)
 
 
 EOF
