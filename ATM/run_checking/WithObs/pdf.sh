@@ -2,14 +2,13 @@
 #SBATCH -A marine-cpu        # -A specifies the account
 #SBATCH -n 1                 # -n specifies the number of tasks (cores) (-N would be for number of nodes) 
 #SBATCH --exclusive          # exclusive use of node - hoggy but OK
-#SBATCH -q batch             # -q specifies the queue; debug has a 30 min limit, but the default walltime is only 5min, to change, see below:
-#SBATCH -t 120               # -t specifies walltime in minutes; if in debug, cannot be more than 30
+#SBATCH -q debug             # -q specifies the queue; debug has a 30 min limit, but the default walltime is only 5min, to change, see below:
+#SBATCH -t 30               # -t specifies walltime in minutes; if in debug, cannot be more than 30
 
 # (proper RMSe calculation version)
 # Creates and runs ncl script with given specifications for paths, names, and preferences
 #
 # The result is a four-panel plot with time series of a) area mean, b) area mean bias, c) raw RMS, d) bias-corrected RMS
-
 
 module load ncl
 
@@ -23,13 +22,12 @@ do
             hardcopy)   hardcopy=${VALUE} ;;             # yes/no hardcopy
             domain)     domain=${VALUE} ;;               # choice of preset domains
             varModel)   varModel=${VALUE} ;;             # model variable name
-            reference)  reference=${VALUE} ;;            # reference for tmp2m
+            reference)  reference=${VALUE} ;;
             season)     season=${VALUE} ;;               # choice of DJF, MAM, JJA, SON
             nameModelA) nameModelA=${VALUE} ;;           # name of first experiment
             nameModelB) nameModelB=${VALUE} ;;           # name of second experiment
             ystart)     ystart=${VALUE} ;;               # first year to consider
             yend)       yend=${VALUE} ;;                 # last year to consider
-            ystep)      ystep=${VALUE} ;;                 # last year to consider
             mstart)     mstart=${VALUE} ;;               # first month to consider
             mend)       mend=${VALUE} ;;                 # last month to consider
             mstep)      mstep=${VALUE} ;;                # interval between months to consider
@@ -43,7 +41,7 @@ done
 
 case "$domain" in 
     "Global") latS="-90"; latN="90" ;  lonW="0" ; lonE="360" ;;
-    "Nino34") latS="-5"; latN="5" ;  lonW="190" ; lonE="240" ;;
+    "Nino3.4") latS="-5"; latN="5" ;  lonW="190" ; lonE="240" ;;
     "GlobalTropics") latS="-30"; latN="30" ;  lonW="0" ; lonE="360" ;;
     "Global20") latS="-20"; latN="20" ;  lonW="0" ; lonE="360" ;;
     "Global50") latS="-50"; latN="50" ;  lonW="0" ; lonE="360" ;;
@@ -59,46 +57,51 @@ case "$domain" in
 esac
 
        mask=$mask
-       if [ "$varModel" == "u850" ] ; then
-          ncvarModel="UGRD_850mb"; multModel=1.; offsetModel=0.; units="m/s"
-          nameObs="${reference:-era5}";  varObs="u850"; ncvarObs="UGRD_850mb"; multObs=1.; offsetObs=0.
-       fi
        if [ "$varModel" == "u200" ] ; then
           ncvarModel="UGRD_200mb"; multModel=1.; offsetModel=0.; units="m/s"
           nameObs="${reference:-era5}";  varObs="u200"; ncvarObs="UGRD_200mb"; multObs=1.; offsetObs=0.
+          cmin=-5.; cmax=5.
+       fi
+       if [ "$varModel" == "u850" ] ; then
+          ncvarModel="UGRD_850mb"; multModel=1.; offsetModel=0.; units="m/s"
+          nameObs="${reference:-era5}";  varObs="u850"; ncvarObs="UGRD_850mb"; multObs=1.; offsetObs=0.
+          cmin=-5.; cmax=5.
        fi
        if [ "$varModel" == "z500" ] ; then
           ncvarModel="HGT_500mb"; multModel=1.; offsetModel=0.; units="m"
           nameObs="${reference:-era5}";  varObs="z500"; ncvarObs="HGT_500mb"; multObs=1.; offsetObs=0.
+          cmin=-40.; cmax=40.
        fi
        if [ "$varModel" == "t2max" ] ; then
           ncvarModel="TMAX_2maboveground"; multModel=1.; offsetModel=0.; units="deg K"
           nameObs="t2max_CPC";  varObs="tmax"; ncvarObs="tmax"; multObs=1.; offsetObs=273.15
-       fi
-       if [ "$varModel" == "tmp2m" ] ; then
-          ncvarModel="TMP_2maboveground"; multModel=1.; offsetModel=0.; units="deg K"
-          nameObs="${reference:-era5}";  varObs="t2m"; ncvarObs="TMP_2maboveground"; multObs=1.; offsetObs=0.
-       fi
-       if [ "$varModel" == "t2m_fromminmax" ] ; then
-          ncvarModel="t2m_fromminmax"; multModel=1.; offsetModel=0.; units="deg K";mask="landonly"
-          nameObs="t2m_from_minmax_CPC";  varObs="t2m_CPC"; ncvarObs="t2m"; multObs=1.; offsetObs=273.15
+          cmin=-5.; cmax=5.
        fi
        if [ "$varModel" == "t2min" ] ; then
           ncvarModel="TMIN_2maboveground"; multModel=1.; offsetModel=0.; units="deg K"
           nameObs="t2min_CPC";  varObs="tmin"; ncvarObs="tmin"; multObs=1.; offsetObs=273.15
+          cmin=-5.; cmax=5.
+       fi
+       if [ "$varModel" == "tmp2m" ] ; then
+          ncvarModel="TMP_2maboveground"; multModel=1.; offsetModel=0.; units="deg K"
+          nameObs="${reference:-era5}";  varObs="t2m"; ncvarObs="TMP_2maboveground"; multObs=1.; offsetObs=0.
+          cmin=-5.; cmax=5.
        fi
        if [ "$varModel" == "tmpsfc" ] ; then
           ncvarModel="TMP_surface"; multModel=1.; offsetModel=0.; units="deg K"
           nameObs="sst_OSTIA";  varObs="sst_OSTIA"; ncvarObs="analysed_sst"; multObs=1.; offsetObs=0.
+          cmin=-2.; cmax=2.
        fi
        if [ "$varModel" == "prate" ] ; then
           ncvarModel="PRATE_surface"; multModel=86400.; offsetModel=0.; units="mm/day"
           nameObs="pcp_CPC_Global";  varObs="rain"; ncvarObs="rain"; multObs=0.1; offsetObs=0.
           nameObs="pcp_TRMM";  varObs="pcp-TRMM"; ncvarObs="precipitation"; multObs=1; offsetObs=0.
+          cmin=-5.; cmax=5.
        fi
        if [ "$varModel" == "ulwrftoa" ] ; then
           ncvarModel="ULWRF_topofatmosphere"; multModel=1.; offsetModel=0.; units="W/m^2"
           nameObs="olr_HRIS"; varObs="ulwrftoa"; ncvarObs="olr"; multObs=1.; offsetObs=0.; units="W/m^2"
+          cmin=-40.; cmax=40.
        fi
 
 # Names for the anomaly arrays
@@ -116,7 +119,7 @@ esac
 
        LENGTH=0   # Total length of each file listing
 
-       for (( yyyy=$ystart; yyyy<=$yend; yyyy+=$ystep ))  ; do
+       for (( yyyy=$ystart; yyyy<=$yend; yyyy+=1 ))  ; do
        for (( mm1=$mstart; mm1<=$mend; mm1+=$mstep )) ; do
        for (( dd1=$dstart; dd1<=$dend; dd1+=$dstep )) ; do
            mm=$(printf "%02d" $mm1)
@@ -128,7 +131,6 @@ esac
                   if [ "$nameObs" == "pcp_TRMM" ] ;  then
                       pathObs="$whereobs/$nameObs/1p00"
                   fi
-                  #echo "yes" $pathObs/${varObs}.day.mean.${tag}.1p00.nc
 
                   if [ -f $pathObs/${varObs}.day.mean.${tag}.1p00.nc ] ; then
                    
@@ -210,7 +212,7 @@ esac
 
    LENGTHm1="$(($LENGTH-1))"                          # Needed for counters starting at 0
    s1=0; s2=$LENGTHm1                                 # Glom together all ICs
-   d1=0; d2=28                                        # from day=d1 to day=d1 (counter starting at 0)
+   d1=0; d2=34                                        # from day=d1 to day=d1 (counter starting at 0)
    d1p1="$(($d1+1))"                                  # day1 (counter starting at 1)
    d2p1="$(($d2+1))"                                  # day2 (counter starting at 1)
 
@@ -218,7 +220,8 @@ esac
 #                                            Create ncl script
 ###################################################################################################
 
-nclscript="linermse12_${season}.ncl"                         # Name for the NCL script to be created
+nclscript="pdf_${season}.ncl"                         # Name for the NCL script to be created
+
 
 cat << EOF > $nclscript
 
@@ -232,7 +235,7 @@ cat << EOF > $nclscript
      wks_type@wkHeight            = 800
   end if 
 
-  wks                          = gsn_open_wks(wks_type,"rmse.${varModel}.${nameModelA}.${nameModelB}.${nameObs}.${season}.${ystart}-${yend}.${truelength}IC.$domain.$mask")
+  wks                          = gsn_open_wks(wks_type,"biaspdf.${varModel}.${nameModelA}.${nameModelB}.${nameObs}.${season}.${truelength}ICs.$domain.$mask")
 
   latStart=${latS}
   latEnd=${latN}
@@ -257,7 +260,7 @@ cat << EOF > $nclscript
 ;   Note that 1 is land, 0 is ocean, 2 is ice-covered ocean
 ;   variable "masker" is set to fill value over land
 
-  mask_add=addfile("$whereexp/$nameModelB/1p00/dailymean/20130401/land.${nameModelB}.20130401.dailymean.1p00.nc", "r")
+  mask_add=addfile("$whereexp/$nameModelB/1p00/dailymean/20120101/land.${nameModelB}.20120101.dailymean.1p00.nc", "r")
   masker=mask_add->LAND_surface(0,:,:)
   masker=where(masker.ne.1,masker,masker@_FillValue)   
 
@@ -295,22 +298,6 @@ cat << EOF > $nclscript
      end if 
   end if
 
-;--- Provision for one of the models being a shorter run 
-
-  dimsA=dimsizes(${nameModelA}_fld)
-  dimsB=dimsizes(${nameModelB}_fld)
-  dimsTA=dimsA(1)
-  dimsTB=dimsB(1)
-  if (dimsTA.lt.dimsTB) then
-     dimsT=dimsTA
-     else
-       dimsT=dimsTB
-  end if
-  print(dimsT)
-  ${nameModelA}_fld := ${nameModelA}_fld(:,0:dimsT-1,:,:) 
-  ${nameModelB}_fld := ${nameModelB}_fld(:,0:dimsT-1,:,:) 
-  ${nameObs}_fld := ${nameObs}_fld(:,0:dimsT-1,:,:)
-
 ;---Adjust scaling and offset  
 
   ${nameModelA}_fld=${nameModelA}_fld*${multModel} + 1.*($offsetModel)
@@ -330,11 +317,6 @@ cat << EOF > $nclscript
     ${nameModelA}_fld=where(.not.ismissing(maskerbig),${nameModelA}_fld,${nameModelA}_fld@_FillValue)
     ${nameModelB}_fld=where(.not.ismissing(maskerbig),${nameModelB}_fld,${nameModelB}_fld@_FillValue)
   end if 
-  ${nameModelA}_fld=where(.not.ismissing(${nameObs}_fld),${nameModelA}_fld,${nameModelA}_fld@_FillValue)
-  ${nameModelB}_fld=where(.not.ismissing(${nameObs}_fld),${nameModelB}_fld,${nameModelB}_fld@_FillValue)
-  print(num(.not.ismissing(${nameModelA}_fld)))
-  print(num(.not.ismissing(${nameModelB}_fld)))
-  print(num(.not.ismissing(${nameObs}_fld)))
 
 ;---Specify dimensions of lat/lon as specified in $domain
 
@@ -345,27 +327,45 @@ cat << EOF > $nclscript
   dimsObs=getvardims(${nameObs}_fld)
   dimsModel=getvardims(${nameModelA}_fld)
 
-;---Limit extent according to the domain specifications
 
-  ${nameObs}_small=${nameObs}_fld($s1:$s2,:,{${latS}:${latN}},{${lonW}:${lonE}})
-  ${nameModelA}_small=${nameModelA}_fld($s1:$s2,:,{${latS}:${latN}},{${lonW}:${lonE}})
-  ${nameModelB}_small=${nameModelB}_fld($s1:$s2,:,{${latS}:${latN}},{${lonW}:${lonE}})
 
+; DEFINE PANEL PROPERTIES
+
+
+    panelopts                   = True
+    panelopts@gsnFrame          = False
+    panelopts@gsnPanelRowSpec   = True
+    panelopts@gsnPanelYWhiteSpacePercent = 5
+    panelopts@gsnPanelXWhiteSpacePercent = 5
+
+    title = "$domain $season $varModel vs $nameObs"
+
+    panelopts@gsnPanelMainString = title    ; set main title
+    ;panelopts@gsnPanelLabelBar  = True
+
+
+
+      cmin=1.0*$cmin
+      cmax=1.0*$cmax
+      tmp=dim_avg_n_Wrap(${nameModelA}_fld($s1:$s2,1:2,{${latS}:${latN}},{${lonW}:${lonE}}),(/0,1/))
+      n_obs=num(.not.ismissing(tmp))
+      print(n_obs)
+      print(nlat + " " + nlon + " " + n_obs)
+
+
+     nPanels                     = 5
+     hist                        = new(nPanels,graphic)
+     plot=new((nPanels+1),graphic)
+
+    do week=1,5 
+       d1=(week-1)*7
+       d2=d1+6
+  
 ;---Calculate mean maps
 
-  ${nameModelA}_mean=dim_avg_n_Wrap(${nameModelA}_fld($s1:$s2,:,{${latS}:${latN}},{${lonW}:${lonE}}),(/0/))
-  ${nameModelB}_mean=dim_avg_n_Wrap(${nameModelB}_fld($s1:$s2,:,{${latS}:${latN}},{${lonW}:${lonE}}),(/0/))
-  ${nameObs}_mean=dim_avg_n_Wrap(${nameObs}_fld($s1:$s2,:,{${latS}:${latN}},{${lonW}:${lonE}}),(/0/))
-
-;---Calculate anomaly maps 
-  
-  ${nameObs}_anom=${nameObs}_small
-  ${nameModelA}_anom=${nameModelA}_small
-  ${nameModelB}_anom=${nameModelB}_small
-
-  ${nameObs}_anom=${nameObs}_small-conform_dims(dimsizes(${nameObs}_small),${nameObs}_mean, (/1,2,3/))
-  ${nameModelA}_anom=${nameModelA}_small-conform_dims(dimsizes(${nameModelA}_small),${nameModelA}_mean, (/1,2,3/))
-  ${nameModelB}_anom=${nameModelB}_small-conform_dims(dimsizes(${nameModelB}_small),${nameModelB}_mean, (/1,2,3/))
+  ${nameModelA}_mean=dim_avg_n_Wrap(${nameModelA}_fld($s1:$s2,d1:d2,{${latS}:${latN}},{${lonW}:${lonE}}),(/0,1/))
+  ${nameModelB}_mean=dim_avg_n_Wrap(${nameModelB}_fld($s1:$s2,d1:d2,{${latS}:${latN}},{${lonW}:${lonE}}),(/0,1/))
+  ${nameObs}_mean=dim_avg_n_Wrap(${nameObs}_fld($s1:$s2,d1:d2,{${latS}:${latN}},{${lonW}:${lonE}}),(/0,1/))
 
 ;---Calculate bias maps
 
@@ -383,191 +383,76 @@ cat << EOF > $nclscript
   ${nameModelA0}_diff@units="$units"
   ${nameModelB0}_diff@units="$units"
 
-;---Define weights for area average
+;---Prepare bias for histograms
 
-  rad    = 4.0*atan(1.0)/180.0
-  re     = 6371220.0
-  rr     = re*rad
+       bias1d=new((/2,dimsizes(ndtooned(${nameModelA0}_diff))/),float)
+       bias1d(0,:)      = ndtooned(${nameModelA0}_diff)
+       bias1d(1,:)      = ndtooned(${nameModelB0}_diff)
 
-  dlon   = abs(lon_0(2)-lon_0(1))*rr
-  dx     = dlon*cos(lat_0*rad)
-  dy     = new ( nlat, typeof(dx))
-  dy(0)  = abs(lat_0(2)-lat_0(1))*rr
-  dy(1:nlat-2)  = abs(lat_0(2:nlat-1)-lat_0(0:nlat-3))*rr*0.5   
-  dy(nlat-1)    = abs(lat_0(nlat-1)-lat_0(nlat-2))*rr
+      pdfres         = True
+      opt         = True
+      opt@bin_min = cmin
+      opt@bin_max = cmax
 
-  weights2   = dx*dy 
+       pdfA=pdfx(bias1d(0,:),25,opt)
+       pdfB=pdfx(bias1d(1,:),25,opt)
 
-  opt=0  ; ignore missing values
 
-;---Calculate area means of the raw fields
+       nVar=2
+       nBin=pdfA@nbins
 
-  ${nameModelA}_aave=wgt_areaave_Wrap(${nameModelA}_mean, weights2,1.0, opt)
-  ${nameModelB}_aave=wgt_areaave_Wrap(${nameModelB}_mean, weights2,1.0, opt)
-  ${nameObs}_aave=wgt_areaave_Wrap(${nameObs}_mean, weights2,1.0, opt)
+       xx      = new ( (/nVar, nBin/), typeof(pdfA))
+       xx(0,:) = pdfA@bin_center
+       xx(1,:) = pdfB@bin_center
 
-;---Calculate area means of the anomaly fields
+       yy      = new ( (/nVar, nBin/), typeof(pdfA))
+       yy(0,:) = (/pdfA/)
+       yy(1,:) = (/pdfB/)
 
-  ${nameModelA0}_aave=wgt_areaave_Wrap(${nameModelA0}_diff, weights2,1.0, opt)
-  ${nameModelB0}_aave=wgt_areaave_Wrap(${nameModelB0}_diff, weights2,1.0, opt)
-
-;---Calculate raw RMSE 
-
-  ${nameObs}_reorder=${nameObs}_small( \$dimsObs(1)\$ | :,  \$dimsObs(0)\$ | :, \$dimsObs(2)\$ | : , \$dimsObs(3)\$ | :)
-  ${nameModelA}_reorder=${nameModelA}_small( \$dimsModel(1)\$ | :,  \$dimsModel(0)\$ | :, \$dimsModel(2)\$ | : , \$dimsModel(3)\$ | :)
-  ${nameModelB}_reorder=${nameModelB}_small( \$dimsModel(1)\$ | :,  \$dimsModel(0)\$ | :, \$dimsModel(2)\$ | : , \$dimsModel(3)\$ | :)
-
-  ${nameModelA}_rmse=wgt_volrmse(${nameObs}_reorder, ${nameModelA}_reorder, 1.0,weights2,1.0, opt)
-  ${nameModelB}_rmse=wgt_volrmse(${nameObs}_reorder, ${nameModelB}_reorder, 1.0,weights2,1.0, opt)
- 
-         
-;---Calculate bias-corrected RMSE
-
-  ${nameObs}_anomreorder=${nameObs}_anom( \$dimsObs(1)\$ | :,  \$dimsObs(0)\$ | :, \$dimsObs(2)\$ | : , \$dimsObs(3)\$ | :)
-  ${nameModelA}_anomreorder=${nameModelA}_anom( \$dimsModel(1)\$ | :,  \$dimsModel(0)\$ | :, \$dimsModel(2)\$ | : , \$dimsModel(3)\$ | :)
-  ${nameModelB}_anomreorder=${nameModelB}_anom( \$dimsModel(1)\$ | :,  \$dimsModel(0)\$ | :, \$dimsModel(2)\$ | : , \$dimsModel(3)\$ | :)
-
-  ${nameModelA}_anomrmse=wgt_volrmse(${nameObs}_anomreorder, ${nameModelA}_anomreorder, 1.0,weights2,1.0, opt)
-  ${nameModelB}_anomrmse=wgt_volrmse(${nameObs}_anomreorder, ${nameModelB}_anomreorder, 1.0,weights2,1.0, opt)
-   
-
-;---Set ploting specifications
-
-  res                     = True
-  res@gsnDraw             = False                          ; don't draw
-  res@gsnFrame            = False                          ; don't advance frame
-  res@xyLineThicknesses = (/10.0, 10.0,  10.0/)          ; make second line thicker
-  res@xyLineColors      = (/"red", "blue", "black"/)          ; change line color
-  res@xyLineColors      = (/"blue", "red", "black"/)          ; change line color
-  res@xyExplicitLegendLabels = (/"${nameModelA}", "${nameModelB}", "${nameObs}"/)
- ; res@tiMainString      = "$domain, $season,  $truelength ICs, $mask"       ; add title
-  res@gsnYRefLine = 0
-  res@gsnXRefLine = (/7,14,21,28,35/)
-
-  res@pmLegendDisplayMode    = "Always"              ; turn on legend
-  res@pmLegendSide           = "Right"                 ; Change location of 
- 
-  res@pmLegendWidthF         = 0.08                  ; Change width and
-  res@lgLabelFontHeightF     = .02                   ; change font height
-  res@lgPerimOn              = False                 ; no box around
+  colors=(/"blue","red"/)
+  pdfres@gsnDraw                = False
+  pdfres@gsnFrame               = False
+  pdfres@xyLineThicknessF       = 12
+  pdfres@gsnXRefLine            = 0
+  pdfres@gsnXRefLineThicknessF  = 1.5
+  pdfres@xyLineColors           = colors
+  pdfres@tiYAxisString          = "PDF (%)"
+  pdfres@gsnCenterString        = "PDF: Bias, Week " + week
+  pdfres@trYMaxF = 50
   
-  ;res@tmXMajorGrid=True
-  res@tmYMajorGrid=True
+  plot(week-1)=gsn_csm_xy(wks,xx,yy,pdfres)
+ end do
 
-  res0=res
-  res1=res
-  res2=res
-
-  if (isStrSubset("{$varModel}","Atmpsfc")) then
-    res0@trYMinF  = 299  
-    res0@trYMaxF  = 300 
-    res1@trYMinF  = -0.15 
-    res1@trYMaxF  = 0.15
-    res2@trYMinF  = 0  
-    res2@trYMaxF  = 1 
-  end if 
-  if (isStrSubset("{$varModel}","At2min")) then
-    if (isStrSubset("{$season}", "AJJA")) then
-       res0@trYMinF  = 291
-       res0@trYMaxF  = 294
-       res1@trYMinF  = -1.5 
-       res1@trYMaxF  = 1.5
-       res2@trYMinF  = 1  
-       res2@trYMaxF  = 5 
-    else 
-       res0@trYMinF  = 288  
-       res0@trYMaxF  = 291
-       res1@trYMinF  = -1.5 
-       res1@trYMaxF  = 1.5
-       res2@trYMinF  = 1  
-       res2@trYMaxF  = 5 
-    end if
-  end if
-  if (isStrSubset("{$varModel}","At2max")) then
-    if (isStrSubset("{$season}", "AJJA")) then
-      res0@trYMinF  = 302  
-      res0@trYMaxF  = 305 
-      res1@trYMinF  = -1.5 
-      res1@trYMaxF  = 1.5
-      res2@trYMinF  = 1  
-      res2@trYMaxF  = 5 
-    else
-      res0@trYMinF  = 302-2  
-      res0@trYMaxF  = 305-2
-      res1@trYMinF  = -1.5 
-      res1@trYMaxF  = 1.5
-      res2@trYMinF  = 1  
-      res2@trYMaxF  = 5 
-    end if
-  end if
-  if (isStrSubset("{$varModel}","Aprate")) then
-    res0@trYMinF  = 1.
-    res0@trYMaxF  = 4.4 
-    res1@trYMinF  = -1.5  
-    res1@trYMaxF  = 1.5
-    res2@trYMinF  = 0  
-    res2@trYMaxF  = 15 
-  end if
-  if (isStrSubset("{$varModel}","Atoa")) then
-    res0@trYMinF  = 250  
-    res0@trYMaxF  = 275 
-    res1@trYMinF  = 0 
-    res1@trYMaxF  = 15
-    res2@trYMinF  = 15  
-    res2@trYMaxF  = 40 
-  end if
+; THIS IS WHERE THE HISTOGRAMS ARE ACTUALLY DRAWN
 
 
-  plot=new(4,graphic)  
+ panelopts@gsnPanelMainString =  title
+ gsn_panel(wks,plot,(/3,3/),panelopts)
 
-  data0=new((/3,dimsizes(${nameModelA}_aave&time)/),float)
-  data0(0,:)=${nameModelA}_aave
-  data0(1,:)=${nameModelB}_aave
-  data0(2,:)=${nameObs}_aave
-  data0@long_name="Area mean, " + "$units"
-  data0@units="$units"
-  plot(0)=gsn_csm_xy(wks,ispan(1,dimsT,1),data0(:,0:dimsT-1),res0)
+;************************************************
+; set legend resources for simple_legend_ndc
+;************************************************
+    genres                           = True
+    genres@XPosPercent               = 75                      ; orientation on page
+    genres@YPosPercent               = 35
+    genres@ItemSpacePercent          = 3
+    textres                          = True
+    textres@lgLabels                 = (/"$nameModelA", "$nameModelB"/)
+    textres@lgPerimOn                = False                   ; no perimeter
+    textres@lgItemCount              = 2                       ; how many
+    lineres                          = True
+    lineres@lgLineLabelFontHeightF   = 0.015                   ; font height
+    lineres@lgDashIndexes            = (/0,1/)             ; line patterns
+    lineres@lgLineColors             = colors
+    lineres@lgLineThicknesses        = 12                     ; line thicknesses
 
-  data1=new((/3,dimsizes(${nameModelA}_aave&time)/),float)
-  data1(0,:)=${nameModelA0}_aave
-  data1(1,:)=${nameModelB0}_aave
-  data1@long_name="Area mean Bias, " + "$units"
-  data1@units="$units"
-  plot(1)=gsn_csm_xy(wks,ispan(1,dimsT,1),data1(:,0:dimsT-1),res1)
-
-  data2=new((/3,dimsizes(${nameModelA}_aave&time)/),float)
-  data2(0,:)=${nameModelA}_rmse
-  data2(1,:)=${nameModelB}_rmse
-  data2@long_name="Raw RMSE, " + "$units"
-  data2@units="$units"
-  plot(2)=gsn_csm_xy(wks,ispan(1,dimsT,1),data2(:,0:dimsT-1),res2)
-
-  data3=new((/3,dimsizes(${nameModelA}_aave&time)/),float)
-  data3(0,:)=${nameModelA}_anomrmse
-  data3(1,:)=${nameModelB}_anomrmse
-  data3@long_name="Bias-corrected RMSE, "  + "$units"
-  data3@units="$units"
-  plot(3)=gsn_csm_xy(wks,ispan(1,dimsT,1),data3(:,0:dimsT-1),res2)
-
-  panelopts                   = True
-  panelopts@gsnPanelMainString = "$domain, $mask, ${varModel}, $season, ${ystart}-${yend}, $truelength ICs"
-
-  panelopts@amJust   = "TopLeft"
-  panelopts@gsnOrientation    = "landscape"
-  panelopts@gsnPanelLabelBar  = False
-  panelopts@gsnPanelRowSpec   = True
-  panelopts@gsnMaximize       = True                          ; maximize plot in frame
-  panelopts@gsnBoxMargin      = 0
-  panelopts@gsnPanelYWhiteSpacePercent = 0
-  panelopts@gsnPanelXWhiteSpacePercent = 5
-  panelopts@amJust   = "TopLeft"
-  ;gsn_panel(wks,plot(0:2),(/1,2/),panelopts)
-  gsn_panel(wks,plot(0:2),(/3/),panelopts)
+  simple_legend_ndc(wks, genres, lineres, textres)
+  frame(wks)
 
 
 EOF
 
-ncl linermse12_${season}.ncl
+ncl pdf_${season}.ncl
 
 
 

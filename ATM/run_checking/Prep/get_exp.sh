@@ -4,19 +4,19 @@
 #SBATCH -A marine-cpu
 #SBATCH -J b31-getfiles
 
+set -x
 module load hpss
 
     # Start/end delimiters for cases to get
 
-        ystart=2013; yend=2013;  ystep=1
-        mstart=2;    mend=12;    mstep=6
-        dstart=1;    dend=1;    dstep=14
+        ystart=2011; yend=2018;  ystep=1
+        mstart=1;    mend=12;    mstep=1
+        dstart=1;    dend=15;    dstep=14
 
     # Name and location of experiment output on HPSS
 
-        exp_new=ufs_p4
-        #hpss_root=/NCEPDEV/emc-climate/5year/Jiande.Wang/WCOSS/scratch/preUFSp4/c384/  # upload data from here
-        hpss_root=/NCEPDEV/emc-climate/5year/Jiande.Wang/WCOSS/benchmark4.0/c384/
+        exp_new=ufs_p6
+        hpss_root=/NCEPDEV/emc-climate/5year/Jiande.Wang/HERA/prototype6.0/c384/       # location on HPSS
         upload_root=/scratch1/NCEPDEV/stmp2/Lydia.B.Stefanova/fromHPSS/                # store uploaded data here
 
 #===================================================================================================================
@@ -28,15 +28,25 @@ for exp in $exp_new ; do
         mm=$(printf "%02d" $mm1)
         dd=$(printf "%02d" $dd1)
         tag=$yyyy$mm${dd}00
-        if [ ! -f ${upload_location}/$tag/gfs.$yyyy$mm$dd/00/gfs.t00z.flux.1p00.f840 ] ; then 
+        if [ ! -f ${upload_location}/$tag/gfs.$yyyy$mm$dd/00/atmos/gfs.t00z.flux.1p00.f840 ] ; then 
            hpss_location=${hpss_root}/$tag
            atmflux1p00=gfs_flux_1p00.tar
-           echo "Working on $tag for $exp"
+           echo "Working on $tag for $exp flux.1p00"
            mkdir -p ${upload_location}/$tag
            cd ${upload_location}/$tag
            htar -xvf ${hpss_location}/$atmflux1p00
         else
-           echo "$exp $tag  already uploaded" 
+           echo "$exp $tag flux.1p00 already uploaded" 
+        fi
+        if [ ! -f ${upload_location}/$tag/gfs.$yyyy$mm$dd/00/atmos/gfs.t00z.pgrb2.1p00.f840 ] ; then
+           hpss_location=${hpss_root}/$tag
+           atmpgrb1p00=gfs_pgrb2_1p00.tar
+           echo "Working on $tag for $exp pgrb2.1p00"
+           mkdir -p ${upload_location}/$tag
+           cd ${upload_location}/$tag
+           htar -xvf ${hpss_location}/$atmpgrb1p00
+        else
+           echo "$exp $tag pgrb2.1p00 already uploaded" 
         fi
     done
     done

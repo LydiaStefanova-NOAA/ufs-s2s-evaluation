@@ -40,8 +40,13 @@ done
 
 
 # ------------------ Generally, DO NOT CHANGE BELOW -----------------
-myarray=(land tmpsfc tmp2m t2min t2max ulwrftoa dlwrf dswrf ulwrf uswrf prate pwat icetk icec cloudbdry cloudlow cloudmid cloudhi snow weasd snod lhtfl shtfl pres u10 v10 uflx vflx soill01d soill14d soill41m soill12m tsoil01d tsoil14d tsoil41m tsoil12mo soilm02m sfcr)
+myarray=(land tmpsfc tmp2m t2min t2max ulwrftoa dlwrf dswrf ulwrf uswrf prate pwat icetk icec cloudbdry cloudlow cloudmid cloudhi snow weasd snod lhtfl shtfl pres u10 v10 uflx vflx soill01d soill14d soill41m soill12m tsoil01d tsoil14d tsoil41m tsoil12mo soilm02m sfcr u850 u200 z500)
 
+if [ $varname == "u850" ] || [  $varname == "u200" ] || [ $varname == "z500" ] ; then
+   ftype=pgrb2
+else
+   ftype=sfc
+fi
 
 for (( yyyy=$ystart; yyyy<=$yend; yyyy+=$ystep )); do
     for (( mm1=$mstart; mm1<=$mend; mm1+=$mstep )); do
@@ -49,7 +54,16 @@ for (( yyyy=$ystart; yyyy<=$yend; yyyy+=$ystep )); do
             mm=$(printf "%02d" $mm1)
             dd=$(printf "%02d" $dd1)
             tag=${yyyy}${mm}${dd}
-            indir=${wherefrom}/${tag}00/gfs.$tag/00    # directory with model output files for given start date
+            indir=${wherefrom}/${tag}00/gfs.$tag/00/atmos    # directory with model output files for given start date
+            if [ ! -d $indir ] ; then
+               indir=${wherefrom}/${tag}/gfs.$tag/00/atmos
+            fi
+            if [ ! -d $indir ] ; then
+               indir=${wherefrom}/${tag}00/gfs.$tag/00
+            fi
+            if [ ! -d $indir ] ; then
+               indir=${wherefrom}/${tag}/gfs.$tag/00
+            fi
 
             if [ ! -d $indir ] ; then
                echo " indir $indir does not exist"
@@ -67,6 +81,15 @@ for (( yyyy=$ystart; yyyy<=$yend; yyyy+=$ystep )); do
 
             aggregate="-daymean"
             tomatch2=""
+            if [ $varname == "u200" ] ; then
+               tomatch="UGRD:200"; aggregate="-daymean"
+            fi
+            if [ $varname == "u850" ] ; then
+               tomatch="UGRD:850"; aggregate="-daymean"
+            fi
+            if [ $varname == "z500" ] ; then
+               tomatch="HGT:500"; aggregate="-daymean"
+            fi
             if [ $varname == "sfcr" ] ; then
                tomatch="SFCR:surface"; aggregate="-daymean"
             fi
@@ -171,16 +194,24 @@ for (( yyyy=$ystart; yyyy<=$yend; yyyy+=$ystep )); do
             if [ -d ${indir} ] ; then
             if [ ! -f ${whereto}/6hrly/${tag}/${varname}.${exp}.${tag}.${res}.grib2 ] ; then
 
-                     echo "aggregating $exp $tag $varname"
+                     echo "aggregating $exp $tag $varname from $ftype file"
                      #--  Extract target variable as grib2 file
 
                       for hhh1 in {6..840..6} ; do
                           hhh=$(printf "%03d" $hhh1)
                           if [ $res == "Orig" ] ; then
-                             infile=${indir}/gfs.t00z.sfluxgrbf${hhh}.grib2
+                             if [ $ftype == "pgrb2" ] ; then
+                                infile=${indir}/gfs.t00z.pgrb2.0p25.f${hhh}
+                             else
+                                infile=${indir}/gfs.t00z.sfluxgrbf${hhh}.grib2
+                             fi
                              outfile=${whereto}/6hrly/${tag}/${varname}.${exp}.${tag}.Orig.f${hhh}
                           else
-                             infile=${indir}/gfs.t00z.flux.${res}.f${hhh}
+                             if [ $ftype == "pgrb2" ] ; then
+                                infile=${indir}/gfs.t00z.pgrb2.${res}.f${hhh}
+                             else
+                                infile=${indir}/gfs.t00z.flux.${res}.f${hhh}
+                             fi
                              outfile=${whereto}/6hrly/${tag}/${varname}.${exp}.${tag}.${res}.f${hhh}
                           fi
                           if [ -f $infile ] ; then

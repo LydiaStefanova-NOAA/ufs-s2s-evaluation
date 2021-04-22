@@ -22,6 +22,8 @@ do
             nameModelB) nameModelB=${VALUE} ;;
             d1) d1=${VALUE} ;;
             d2) d2=${VALUE} ;;
+            nplots) nplots=${VALUE:-3} ;;
+            res) res=${VALUE:-1p00} ;;
             *)
     esac
 
@@ -35,8 +37,8 @@ case "$domain" in
     "Global50") latS="-50"; latN="50" ;  lonW="0" ; lonE="360" ;;
     "CONUS") latS="25"; latN="60" ;  lonW="210" ; lonE="300" ;;
     "NAM") latS="0"; latN="90" ;  lonW="180" ; lonE="360" ;;
-    "NH") latS="50"; latN="90" ;  lonW="0" ; lonE="360" ;;
-    "SH") latS="-90"; latN="-50" ;  lonW="0" ; lonE="360" ;;
+    "NH") latS="40"; latN="90" ;  lonW="0" ; lonE="360" ;;
+    "SH") latS="-90"; latN="-40" ;  lonW="0" ; lonE="360" ;;
     *)
 esac
 
@@ -119,26 +121,29 @@ nameModelBA=${nameModelB}_minus_${nameModelA}
        if [ "$varModel" == "icec" ] ; then
            ncvarModel="ICEC_surface"; multModel=100.; offsetModel=0.; units="percent"; mask="nomask"
        fi
+    
+       mask="oceanonly"
+       mask="nomask"
 
        rm -f ${varModel}-${nameModelA}-list.txt ${varModel}-${nameModelB}-list.txt    # clean up from last time
 
        LENGTH=0
        pass=0
        for yyyy in {2011..2018..1} ; do
-       for mm1 in {1..12..3} ; do
-       for dd1 in {1..15..14} ; do
+       for mm1 in {1..12..1} ; do
+       for dd1 in {1..15..140} ; do
            mm=$(printf "%02d" $mm1)
            dd=$(printf "%02d" $dd1)
            tag=$yyyy$mm${dd}
-           if [ -f $whereexp/$nameModelA/1p00/dailymean/${tag}/${varModel}.${nameModelA}.${tag}.dailymean.1p00.nc ] ; then
-              if [ -f $whereexp/$nameModelB/1p00/dailymean/${tag}/${varModel}.${nameModelB}.${tag}.dailymean.1p00.nc ] ; then
+           if [ -f $whereexp/$nameModelA/${res}/dailymean/${tag}/${varModel}.${nameModelA}.${tag}.dailymean.${res}.nc ] ; then
+              if [ -f $whereexp/$nameModelB/${res}/dailymean/${tag}/${varModel}.${nameModelB}.${tag}.dailymean.${res}.nc ] ; then
 
                  case "${season}" in
                       *"DJF"*)
                           if [ $mm1 -ge 12 ] || [ $mm1 -le 2 ] ; then
                              for nameModel in $nameModelA $nameModelB ; do
-                                 pathModel="$whereexp/$nameModel/1p00/dailymean"
-                                 ls -d -1 $pathModel/${tag}/${varModel}.${nameModel}.${tag}.dailymean.1p00.nc >> ${varModel}-${nameModel}-list.txt
+                                 pathModel="$whereexp/$nameModel/${res}/dailymean"
+                                 ls -d -1 $pathModel/${tag}/${varModel}.${nameModel}.${tag}.dailymean.${res}.nc >> ${varModel}-${nameModel}-list.txt
                              done
                                  LENGTH="$(($LENGTH+1))"                       # How many ICs are considered
                           fi
@@ -146,8 +151,8 @@ nameModelBA=${nameModelB}_minus_${nameModelA}
                       *"MAM"*)
                           if [ $mm1 -ge 3 ] && [ $mm1 -le 5 ] ; then
                              for nameModel in $nameModelA $nameModelB ; do
-                                 pathModel="$whereexp/$nameModel/1p00/dailymean"
-                                 ls -d -1 $pathModel/${tag}/${varModel}.${nameModel}.${tag}.dailymean.1p00.nc >> ${varModel}-${nameModel}-list.txt
+                                 pathModel="$whereexp/$nameModel/${res}/dailymean"
+                                 ls -d -1 $pathModel/${tag}/${varModel}.${nameModel}.${tag}.dailymean.${res}.nc >> ${varModel}-${nameModel}-list.txt
                              done
                                  LENGTH="$(($LENGTH+1))"                       # How many ICs are considered
                           fi
@@ -155,8 +160,8 @@ nameModelBA=${nameModelB}_minus_${nameModelA}
                       *"JJA"*)
                           if [ $mm1 -ge 6 ] && [ $mm1 -le 8 ] ; then
                              for nameModel in $nameModelA $nameModelB ; do
-                                 pathModel="$whereexp/$nameModel/1p00/dailymean"
-                                 ls -d -1 $pathModel/${tag}/${varModel}.${nameModel}.${tag}.dailymean.1p00.nc >> ${varModel}-${nameModel}-list.txt
+                                 pathModel="$whereexp/$nameModel/${res}/dailymean"
+                                 ls -d -1 $pathModel/${tag}/${varModel}.${nameModel}.${tag}.dailymean.${res}.nc >> ${varModel}-${nameModel}-list.txt
                              done
                                  LENGTH="$(($LENGTH+1))"                       # How many ICs are considered
                           fi
@@ -164,16 +169,16 @@ nameModelBA=${nameModelB}_minus_${nameModelA}
                       *"SON"*)
                           if [ $mm1 -ge 9 ] && [ $mm1 -le 11 ] ; then
                              for nameModel in $nameModelA $nameModelB ; do
-                                 pathModel="$whereexp/$nameModel/1p00/dailymean"
-                                 ls -d -1 $pathModel/${tag}/${varModel}.${nameModel}.${tag}.dailymean.1p00.nc >> ${varModel}-${nameModel}-list.txt
+                                 pathModel="$whereexp/$nameModel/${res}/dailymean"
+                                 ls -d -1 $pathModel/${tag}/${varModel}.${nameModel}.${tag}.dailymean.${res}.nc >> ${varModel}-${nameModel}-list.txt
                              done
                                  LENGTH="$(($LENGTH+1))"                       # How many ICs are considered
                           fi
                       ;;
                       *"AllAvailable"*)
                              for nameModel in $nameModelA $nameModelB ; do
-                                 pathModel="$whereexp/$nameModel/1p00/dailymean"
-                                 ls -d -1 $pathModel/${tag}/${varModel}.${nameModel}.${tag}.dailymean.1p00.nc >> ${varModel}-${nameModel}-list.txt
+                                 pathModel="$whereexp/$nameModel/${res}/dailymean"
+                                 ls -d -1 $pathModel/${tag}/${varModel}.${nameModel}.${tag}.dailymean.${res}.nc >> ${varModel}-${nameModel}-list.txt
                              done
                                  LENGTH="$(($LENGTH+1))"                       # How many ICs are considered
                       ;;
@@ -208,7 +213,7 @@ nameModelBA=${nameModelB}_minus_${nameModelA}
 ###################################################################################################
 
 echo $iclist
-nclscript="map_${season}.ncl"                         # Name for the NCL script to be created
+nclscript="map_${season}.polar.ncl"                         # Name for the NCL script to be created
 cat << EOF > $nclscript
 
   if isStrSubset("$hardcopy","yes") then
@@ -240,7 +245,7 @@ cat << EOF > $nclscript
   ${nameModelA}_add = addfiles (${nameModelA}_list, "r")   ; note the "s" of addfile
   ${nameModelB}_add = addfiles (${nameModelB}_list, "r")   
 
-  maskMod=addfile("$whereexp/${nameModelA}/1p00/dailymean/20120101/land.${nameModelA}.20120101.dailymean.1p00.nc", "r")
+  maskMod=addfile("$whereexp/${nameModelA}/${res}/dailymean/20120101/land.${nameModelA}.20120101.dailymean.${res}.nc", "r")
   masker=maskMod->LAND_surface(0,{${latS}:${latN}},{${lonW}:${lonE}})
   ;masker=where(masker.lt.1,masker,masker@_FillValue)
   masker=where(masker.ne.1,masker,masker@_FillValue)
@@ -254,8 +259,14 @@ cat << EOF > $nclscript
   ${nameModelA}_lat_0=${nameModelA}_add[:]->latitude
   ${nameModelA}_lon_0=${nameModelA}_add[:]->longitude
 
-  ${nameModelA}_fld = ${nameModelA}_add[:]->${ncvarModel}
-  ${nameModelB}_fld = ${nameModelB}_add[:]->${ncvarModel}
+  nameA=getfilevarnames(${nameModelA}_add[0])
+  nameB=getfilevarnames(${nameModelB}_add[0])
+
+  ${nameModelA}_fld = ${nameModelA}_add[:]->\$nameA(4)\$
+  ${nameModelB}_fld = ${nameModelB}_add[:]->\$nameB(4)\$
+
+  ;${nameModelA}_fld = ${nameModelA}_add[:]->${ncvarModel}
+  ;${nameModelB}_fld = ${nameModelB}_add[:]->${ncvarModel}
 
 
   lat_0 = ${nameModelA}_lat_0(0,{${latS}:${latN}})
@@ -343,7 +354,7 @@ cat << EOF > $nclscript
   ${nameModelBA}_diff@long_name="Difference" +"; mean=" + ${nameModelBA}_aave + "; min=" + amin + "; max=" + amax
   ratio@long_name="Percent Change"
 
-  plot=new(1,graphic)
+  plot=new($nplots,graphic)
 
   res                     = True
   if (isStrSubset("$domain","CONUS").or.isStrSubset("$domain","NAM")) then
@@ -412,10 +423,11 @@ cat << EOF > $nclscript
       res2@cnLevels             = (/ -40., -20., -10.,-5.,-2., 2. ,5. ,10. ,20. , 40./)   ; set levels
 
   end if
-  if (isStrSubset("{$varModel}","cloud")) then
+  if (isStrSubset("{$varModel}","oldcloud")) then
        cmap=read_colormap_file("MPL_gnuplot")
        cmap = cmap(::-1,:)
        res0@cnFillPalette = cmap
+
        res0@cnMinLevelValF  = 10.
        res0@cnMaxLevelValF  = 90.
        res0@cnLevelSpacingF  = 10.
@@ -424,6 +436,33 @@ cat << EOF > $nclscript
        res1@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
        res1@cnLevels             = (/ -40., -20., -10.,-5.,-2., 2. ,5. ,10. ,20. , 40./)   ; set levels
        res1@cnFillColors         = (/ 11,  10,   9,    8,   7,  6,  5,  4,  3,    2,  1/)  ; set the colors to be used
+
+
+       res2=res1
+       res2@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+       res2@cnLevels             = (/ -40., -20., -10.,-5.,-2., 2. ,5. ,10. ,20. , 40./)   ; set levels
+       res2@cnFillColors         = (/ 11,  10,   9,    8,   7,  6,  5,  4,  3,    2,  1/)  ; set the colors to be used
+  end if
+  if (isStrSubset("{$varModel}","cloud")) then
+       cmap=read_colormap_file("MPL_gnuplot")
+       cmap = cmap(::-1,:)
+;       res0@cnFillPalette = cmap
+
+;       res0@cnFillPalette="precip3_16lev"
+       res0@cnFillPalette="CBR_wet"
+
+
+       res0@cnMinLevelValF  = 10.
+       res0@cnMaxLevelValF  = 90.
+       res0@cnLevelSpacingF  = 10.
+
+;       res1@cnFillPalette        = "sunshine_diff_12lev"
+;       res1@cnFillPalette="precip3_16lev"
+       res1@cnFillPalette="precip_diff_12lev"
+       res1@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+       res1@cnLevels             = (/ -40., -20., -10.,-5.,-2., 2. ,5. ,10. ,20. , 40./)   ; set levels
+       res1@cnFillColors         = (/ 11,  10,   9,    8,   7,  6,  5,  4,  3,    2,  1/)  ; set the colors to be used
+       res1@cnFillColors         = (/ 1,  2,   3,    4,  5,  6,  7,  8,  9,    10,  11/)  ; set the colors to be used
 
 
        res2=res1
@@ -537,7 +576,7 @@ cat << EOF > $nclscript
       res2@cnLevels             = (/ -40., -20., -10.,-5.,-2., 2. ,5. ,10. ,20. , 40./)   ; set levels
   end if
 
-  if (isStrSubset("{$varModel}","snow").or.isStrSubset("{$varModel}","icec")) then
+  if (isStrSubset("{$varModel}","snow").or.isStrSubset("{$varModel}","noticec")) then
       res0@cnFillPalette="GMT_drywet"
       res0@cnFillPalette="CBR_wet"
       res0@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
@@ -552,6 +591,24 @@ cat << EOF > $nclscript
       res2@cnMaxLevelValF  = 100.
       res2@cnLevelSpacingF  = 20.
   end if
+  if (isStrSubset("{$varModel}","snow").or.isStrSubset("{$varModel}","icec")) then
+       levs = (/0.05, 0.95, 0.1/)
+       levs = (/5., 95., 10./)
+       colormap = "amwg256"
+       
+       res0@cnFillPalette = colormap
+       res0@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+       res0@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+       res0@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+       res0@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+
+      res1@cnFillPalette="precip_diff_12lev"
+      res1@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+      res1@cnLevels             = (/ -50., -25., -10., -5.,-1., 1.,5., 10., 25., 50. /)   ; set levels
+   end if
+       
+
+
 
   if (isStrSubset("{$varModel}","wrf")) then
        cmap=read_colormap_file("MPL_gnuplot")
@@ -570,9 +627,8 @@ cat << EOF > $nclscript
        res2@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
        res2@cnLevels             = (/ -40., -20., -10.,-5.,-2., 2. ,5. ,10. ,20. , 40./)   ; set levels
   end if 
-  res1@mpGeophysicalLineThicknessF=0.3
-
-  plot(0) = gsn_csm_contour_map_polar(wks,${nameModelBA}_diff,res1)
+  ;res1@mpGeophysicalLineThicknessF=0.3
+  
 
 
   panelopts                   = True
@@ -586,11 +642,21 @@ cat << EOF > $nclscript
   panelopts@gsnPanelYWhiteSpacePercent = 0
   panelopts@gsnPanelXWhiteSpacePercent = 5
   panelopts@amJust   = "TopLeft"
-  gsn_panel(wks,plot,(/1/),panelopts)
+
+  if ($nplots.eq.1) then
+   plot(0) = gsn_csm_contour_map_polar(wks,${nameModelBA}_diff,res1)
+   gsn_panel(wks,plot,(/1/),panelopts)
+  end if
+  if ($nplots.eq.3) then
+   plot(0) = gsn_csm_contour_map_polar(wks,${nameModelA}_mean,res0)
+   plot(1) = gsn_csm_contour_map_polar(wks,${nameModelB}_mean,res0)
+   plot(2) = gsn_csm_contour_map_polar(wks,${nameModelBA}_diff,res1)
+   gsn_panel(wks,plot,(/2,1/),panelopts)
+  end if
 
 EOF
 
-ncl -Q map_${season}.ncl
+ncl -Q map_${season}.polar.ncl
 
 
 

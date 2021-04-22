@@ -1,6 +1,44 @@
 procedure setcolors (varname)
 
 begin
+  if (isStrSubset(varname,"u200")) then
+      res0@cnMinLevelValF  = -40.
+      res0@cnMaxLevelValF  = 40.
+      res0@cnLevelSpacingF  = 5.
+
+      res1@cnMinLevelValF  = -5.
+      res1@cnMaxLevelValF  = 5.
+      res1@cnLevelSpacingF  = 0.5
+   
+      res2=res1
+
+  end if
+  if (isStrSubset(varname,"u850")) then
+      res0@cnMinLevelValF  = -12.
+      res0@cnMaxLevelValF  = 12.
+      res0@cnLevelSpacingF  = 2.
+
+      res1@cnMinLevelValF  = -3.
+      res1@cnMaxLevelValF  = 3.
+      res1@cnLevelSpacingF  = 0.2
+
+      res2=res1
+  end if
+
+  if (isStrSubset(varname,"z500")) then
+
+       res0@cnMinLevelValF  = 5000.
+       res0@cnMaxLevelValF  = 5800.
+       res0@cnLevelSpacingF  = 50.
+
+       res1@cnMinLevelValF  = -50.
+       res1@cnMaxLevelValF  = 50.
+       res1@cnLevelSpacingF  = 5.
+
+       res2=res1
+
+  end if 
+
   if (isStrSubset(varname,"cloud")) then
        cmap=read_colormap_file("MPL_gnuplot")
        cmap = cmap(::-1,:)
