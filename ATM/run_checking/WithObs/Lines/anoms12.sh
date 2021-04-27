@@ -257,7 +257,7 @@ cat << EOF > $nclscript
 ;   Note that 1 is land, 0 is ocean, 2 is ice-covered ocean
 ;   variable "masker" is set to fill value over land
 
-  mask_add=addfile("$whereexp/$nameModelB/1p00/dailymean/20130401/land.${nameModelB}.20130401.dailymean.1p00.nc", "r")
+  mask_add=addfile("$whereexp/$nameModelB/1p00/dailymean/20120101/land.${nameModelB}.20120101.dailymean.1p00.nc", "r")
   masker=mask_add->LAND_surface(0,:,:)
   masker=where(masker.ne.1,masker,masker@_FillValue)   
 

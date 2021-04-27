@@ -47,6 +47,12 @@ esac
 
 
 nameModelBA=${nameModelB}_minus_${nameModelA}
+       if [ "$varModel" == "TAminusTS" ] ; then
+          ncvarModel="TAminusTS"; multModel=1; offsetModel=0.; units="degC"
+       fi
+       if [ "$varModel" == "hpbl" ] ; then
+          ncvarModel="HPBL_surface"; multModel=1; offsetModel=0.; units="m"
+       fi
        if [ "$varModel" == "u200" ] ; then
           ncvarModel="UGRD_200mb"; multModel=1; offsetModel=0.; units="m/s"
        fi
@@ -104,6 +110,9 @@ nameModelBA=${nameModelB}_minus_${nameModelA}
        fi
        if [ "$varModel" == "prate" ] ; then
           ncvarModel="PRATE_surface"; multModel=86400.; offsetModel=0.; units="mm/day"
+       fi
+       if [ "$varModel" == "cprate" ] ; then
+          ncvarModel="CPRATE_surface"; multModel=86400.; offsetModel=0.; units="mm/day"
        fi
        if [ "$varModel" == "lhtfl" ] ; then
           ncvarModel="LHTFL_surface"; multModel=0.03456; offsetModel=0.; units="mm/day"
@@ -285,8 +294,11 @@ cat << EOF > $nclscript
   nameA=getfilevarnames(${nameModelA}_add[0])
   nameB=getfilevarnames(${nameModelB}_add[0])
 
-  ${nameModelA}_fld = ${nameModelA}_add[:]->\$nameA(4)\$
-  ${nameModelB}_fld = ${nameModelB}_add[:]->\$nameB(4)\$
+  nA=dimsizes(nameA)
+  nB=dimsizes(nameB)
+
+  ${nameModelA}_fld = ${nameModelA}_add[:]->\$nameA(nA-1)\$
+  ${nameModelB}_fld = ${nameModelB}_add[:]->\$nameB(nB-1)\$
 
 
 ;--- Provision for one of the models being a shorter run 
@@ -472,7 +484,28 @@ cat << EOF > $nclscript
       res2=res1
 
   end if
+  if (isStrSubset("{$varModel}","TAminusTS")) then
+      res0@cnMinLevelValF  = -4.
+      res0@cnMaxLevelValF  = 4.
+      res0@cnLevelSpacingF  = 0.2
+
+      res1@cnMinLevelValF  = -0.5
+      res1@cnMaxLevelValF  = 0.5
+      res1@cnLevelSpacingF  = 0.05
   
+      res2=res1
+  end if
+  if (isStrSubset("{$varModel}","hpbl")) then
+      res0@cnMinLevelValF  = 100.
+      res0@cnMaxLevelValF  = 1200.
+      res0@cnLevelSpacingF  = 100.
+  
+      res1@cnFillPalette        = "BlueDarkRed18"
+      res1@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+      res1@cnLevels = (/-100., -80., -40., -20., -10, -5., 5., 10. , 20., 40. , 80., 100./)
+   
+      res2=res1
+  end if
 
   if (isStrSubset("{$varModel}","sfcr")) then
        res0@cnFillPalette        = "temp_diff_18lev"
@@ -530,12 +563,16 @@ cat << EOF > $nclscript
        res0@cnLevelSpacingF  = 20.
 
        res1@cnFillPalette        = "temp_diff_18lev"
-       res1@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-       res1@cnLevels             = (/ -50., -30., -20.,-10.,-5., 5. ,10. ,20. ,30. , 50./)   ; set levels
+       ;res1@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+       ;res1@cnLevels             = (/ -10., -30., -20.,-10.,-5., 5. ,10. ,20. ,30. , 50./)   ; set levels
+       res1@cnMinLevelValF  = -10.
+       res1@cnMaxLevelValF  = 10.
+       res1@cnLevelSpacingF  = 0.5
 
        res2@cnFillPalette        = "temp_diff_18lev"
-       res2@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
-       res2@cnLevels             = (/ -40., -20., -10.,-5.,-2., 2. ,5. ,10. ,20. , 40./)   ; set levels
+       ;res2@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+       ;res2@cnLevels             = (/ -40., -20., -10.,-5.,-2., 2. ,5. ,10. ,20. , 40./)   ; set levels
+       res2=res1
   end if
        
   if (isStrSubset("{$varModel}","t2min")) then

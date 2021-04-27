@@ -37,8 +37,8 @@ case "$domain" in
     "Global50") latS="-50"; latN="50" ;  lonW="0" ; lonE="360" ;;
     "CONUS") latS="25"; latN="60" ;  lonW="210" ; lonE="300" ;;
     "NAM") latS="0"; latN="90" ;  lonW="180" ; lonE="360" ;;
-    "NH") latS="40"; latN="90" ;  lonW="0" ; lonE="360" ;;
-    "SH") latS="-90"; latN="-40" ;  lonW="0" ; lonE="360" ;;
+    "NP") latS="40"; latN="90" ;  lonW="0" ; lonE="360" ;;
+    "SP") latS="-90"; latN="-40" ;  lonW="0" ; lonE="360" ;;
     *)
 esac
 
@@ -262,8 +262,11 @@ cat << EOF > $nclscript
   nameA=getfilevarnames(${nameModelA}_add[0])
   nameB=getfilevarnames(${nameModelB}_add[0])
 
-  ${nameModelA}_fld = ${nameModelA}_add[:]->\$nameA(4)\$
-  ${nameModelB}_fld = ${nameModelB}_add[:]->\$nameB(4)\$
+  nA=dimsizes(nameA)
+  nB=dimsizes(nameB)
+
+  ${nameModelA}_fld = ${nameModelA}_add[:]->\$nameA(nA-1)\$
+  ${nameModelB}_fld = ${nameModelB}_add[:]->\$nameB(nB-1)\$
 
   ;${nameModelA}_fld = ${nameModelA}_add[:]->${ncvarModel}
   ;${nameModelB}_fld = ${nameModelB}_add[:]->${ncvarModel}

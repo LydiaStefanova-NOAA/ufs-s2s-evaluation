@@ -154,6 +154,20 @@ begin
 
   end if
 
+  if (isStrSubset(varname,"hpbl")) then
+      res0@cnMinLevelValF  = 100.
+      res0@cnMaxLevelValF  = 1200.
+      res0@cnLevelSpacingF  = 100.
+
+      res1@cnFillPalette        = "temp_diff_18lev"
+      res1@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+      res1@cnLevels             = (/ -100., -80., -40.,-20.,-10., 10. ,20. ,40. ,80. , 100./)   ; set levels
+
+      res2@cnFillPalette        = "temp_diff_18lev"
+      res2@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
+      res2@cnLevels             = (/ -100., -80., -40.,-20.,-10., 10. ,20. ,40. ,80. , 100./)   ; set levels
+
+  end if
   if (isStrSubset(varname,"snod")) then
 
       res0@cnFillPalette="CBR_wet"

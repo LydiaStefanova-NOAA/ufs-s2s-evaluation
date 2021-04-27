@@ -18,8 +18,11 @@
         whereexp=$exp_root
         whereobs=$obs_root
 
-        exp_old=ufs_p5
-        exp_new=ufs_p6
+        exp_old=ufs_orion_ctl
+        exp_new=ufs_orion_nsst
+
+        #exp_old=ufs_p5
+        #exp_new=ufs_p6
 
         res=1p00
 
@@ -32,16 +35,16 @@
                       # "1" plots difference exp_new - exp_old (and is therefore independent of the choice of reference obs)
 
         mapscript=map_compare_obs.sh    
-        hardcopy=no                # Valid choices are yes no      
-        domain=GlobalTropics       # Valid choices see [case "$domain" list] in mapping script
+        hardcopy=yes                # Valid choices are yes no      
         domain=Global              # Valid choices see [case "$domain" list] in mapping script
         reference=cfsr             # Current valid choudes are era5 and cfsr; if omitted, defaults to era5
+        domain=Global       # Valid choices see [case "$domain" list] in mapping script
 
       # NB: keep in mind that verifying obs for tmpsfc (OSTIA SST) are not valid for ice-covered areas because tmpsfc there is not sst
         declare -a varlist=("z500" "tmpsfc" "tmp2m" "prate" "ulwrftoa" "u200" "u850"  )  # Current valid choices for comparison with OBS are "tmpsfc" "prate" "ulwrftoa" "tmp2m" "t2min" "t2max" 
-        declare -a varlist=("tmp2m")
-        reference=era5
+        declare -a varlist=("tmpsfc" "prate" "ulwrftoa" "tmp2m")
         declare -a seasonlist=("AllAvailable")     # Valid choices are "DJF" "MAM" "JJA" "SON" "AllAvailable"
+        declare -a varlist=("z500" )
 
         for season in ${seasonlist[@]} ; do
             for varname in ${varlist[@]}; do
