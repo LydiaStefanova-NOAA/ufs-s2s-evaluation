@@ -11,19 +11,16 @@
 
     # Start/end delimiters for initial conditions
 
-      startdate=20191203
-      enddate=20200226
-
-      #startdate=20190601
-      #enddate=20200831
+      startdate=20190601
+      enddate=20200831
 
     # Name and location of experiment output on HPSS
 
-        exp_new=GFSv16
-        upload_root=/scratch1/NCEPDEV/climate/Lydia.B.Stefanova/GFSv16/
+        #exp_new=GFSv16
+        #upload_root=/scratch1/NCEPDEV/climate/Lydia.B.Stefanova/GFSv16/
 
-        #exp_new=ufs_hr1
-        #upload_root=/scratch1/NCEPDEV/stmp2/Lydia.B.Stefanova/fromHPSS/ufs_hr1/
+        exp_new=ufs_hr1
+        upload_root=/scratch1/NCEPDEV/stmp2/Lydia.B.Stefanova/fromHPSS/ufs_hr1/
 
         exp_root=/scratch1/NCEPDEV/climate/Lydia.B.Stefanova/Models/                   # store preprocessed data here
 

@@ -9,11 +9,8 @@
 
     # Start/end delimiters for initial conditions
 
-startdate=20200601
-enddate=20200830
 
-startdate=20191203
-enddate=20200226
+startdate=20171203
 enddate=20200830
 
     # Name and location of experiment and obs (data as 35-day time series in netcdf)
@@ -26,12 +23,15 @@ enddate=20200830
         exp_old=GFSv16
         exp_new=ufs_hr1
 
+        exp_old=ufs_p7
+        exp_new=ufs_p8
+
         res=1p00  # this is the only available resolution for bias comparisons
 
     # Other specitications
 
         hardcopy=yes              # Valid choices are yes no      
-        #hardcopy=no              # Valid choices are yes no     
+        hardcopy=no              # Valid choices are yes no     
 
         nplots=3      # Valid choices are 9 or 3 or 1; 
                       # "9" plots full fields for obs, exp_old, exp_new AND bias for exp_old, exp_new AND  difference exp_new - exp_old
@@ -43,8 +43,8 @@ enddate=20200830
 
         domain=Global       # Valid choices see [case "$domain" list] in mapping script
         plotdomain=Global       # Valid choices see [case "$domain" list] in mapping script
-        domain=NAM      # Valid choices see [case "$domain" list] in mapping script
-        plotdomain=NAM       # Valid choices see [case "$domain" list] in mapping script
+        #domain=NAM      # Valid choices see [case "$domain" list] in mapping script
+        #plotdomain=NAM       # Valid choices see [case "$domain" list] in mapping script
         reference=gefs12r          # for tmp2m, z500, u200, u850, the current valid choudes are era5, cfsr, gefs12r; if omitted, defaults to era5
         reference=era5          # for tmp2m, z500, u200, u850, the current valid choudes are era5, cfsr, gefs12r; if omitted, defaults to era5
                                    # the setting of 'reference' is ignored for other variables

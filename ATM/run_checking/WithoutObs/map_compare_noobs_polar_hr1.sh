@@ -141,11 +141,14 @@ monthur=()
 
 while [ $idate -le $enddate ] ; do
    monthur+=( "$idate" )
-   idate=$(date -d "$idate + 3 days" "+%C%y%m%d")
+   #idate=$(date -d "$idate + 3 days" "+%C%y%m%d")
+   idate=$(date -d "$idate + 1 days" "+%C%y%m%d")
 done
 
 # Loop through days with output
+
 for tag in ${monthur[@]} ; do
+mm1=${tag:4:2}
            if [ -f $whereexp/$nameModelA/${res}/dailymean/${tag}/${varModel}.${nameModelA}.${tag}.dailymean.${res}.nc ] ; then
               if [ -f $whereexp/$nameModelB/${res}/dailymean/${tag}/${varModel}.${nameModelB}.${tag}.dailymean.${res}.nc ] ; then
 
