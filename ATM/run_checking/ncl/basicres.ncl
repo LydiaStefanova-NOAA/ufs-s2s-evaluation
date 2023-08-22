@@ -22,6 +22,7 @@
   res@mpMinLonF              = lonStart
   res@mpMaxLonF              = lonEnd
   res@cnLevelSelectionMode   = "ManualLevels"
-  res@mpGeophysicalLineThicknessF=0.3
+;  res@mpGeophysicalLineThicknessF=0.3
+  res@gsnAddCyclic = True
 
 
